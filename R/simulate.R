@@ -1,3 +1,42 @@
+SL.caretRF <- function(Y, X, newX, family, obsWeights, id, ...) {
+  index <- origami::make_folds(n = length(Y), cluster_ids = id, V = 5)
+  index <- lapply(index, function(x) x$training_set)
+  control <- caret::trainControl(method = "cv", search = 'random', index = index,
+                                 verboseIter = TRUE, classProbs = TRUE)
+  SL.caret(Y, X, newX, family, obsWeights, method = 'ranger', tuneLength = 100,
+           trControl = control, ...)
+}
+
+SL.hal90011 <- function(Y, X, newX = NULL, max_degree = NULL,
+                        fit_type = "glmnet", n_folds = 3,
+                        use_min = TRUE, family = stats::gaussian(),
+                        obsWeights = rep(1, length(Y)), id = id, ...) {
+  n <- length(Y)
+  if (!is.matrix(X)) {
+    X_in <- as.matrix(X)
+  } else {
+    X_in <- X
+  }
+  if (!is.null(newX) & !is.matrix(newX)) {
+    newX_in <- as.matrix(newX)
+  } else {
+    newX_in <- newX
+  }
+  hal_out <- hal9001::fit_hal(Y = Y, X = X_in, max_degree = max_degree, id = id,
+                              fit_type = fit_type, n_folds = n_folds, use_min = use_min,
+                              lambda = seq(1 / n^2, 1 / sqrt(n), length.out = 50),
+                              family = "gaussian", weights = obsWeights, yolo = FALSE)
+  if (!is.null(newX)) {
+    pred <- stats::predict(hal_out, new_data = newX_in)
+  } else {
+    pred <- stats::predict(hal_out, new_data = X_in)
+  }
+  fit <- list(object = hal_out)
+  out <- list(pred = pred, fit = fit)
+  class(out$fit) <- "SL.hal9001"
+  return(out)
+}
+
 #' Simulation shift function
 #'
 #' @param data 
@@ -25,12 +64,12 @@ lmtp_simulate <- function(seed, n, type, estimator) {
   w <- list(c("L_1"), c("L_2"), c("L_3"), c("L_4")) # names of covariates
   y <- "Y"                                          # final outcome
   
-  wrong <- "SL.mean"                        # a insufficient learner stack
-  right <- c("SL.glm", "SL.mean", "SL.hal") # a sufficient learner stack
+  wrong <- "SL.mean"
+  right <- c("SL.glm", "SL.mean", "SL.hal90011")
   
   if (n == 200) folds <- 10
   if (n > 200 && n < 1000) folds <- 5
-  if (n > 1000) n <- 2
+  if (n > 1000) folds <- 2
   
   switch(
     type,

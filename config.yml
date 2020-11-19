@@ -3,11 +3,11 @@ default:
   nobs: !expr as.integer(cumsum(rep(sqrt(200), 5))^2)
   machines: 1000
   task: !expr as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
-  save: "/home/niw4001/lmtp-jasa-rev/results"
+  save: "/home/niw4001/lmtp-jasa-sim-rev/results"
   
 testing: 
   reps: 5
-  nobs: 500
+  nobs: 5000
   machines: 10
   task: 4
   save: !expr here::here("tests", "results")
