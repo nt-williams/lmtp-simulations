@@ -8,6 +8,7 @@
 library(data.table)
 library(ggplot2)
 library(patchwork)
+library(purrr)
 
 # global ------------------------------------------------------------------
 
@@ -19,7 +20,7 @@ res <- here::here("results")
 alpha <- 0.05
 
 plot_res <- function(data, scenario, y) {
-  title <- if (y == "bias") {
+  title <- if (y == "bias" || y == "rel_std_error") {
     glue::glue("Scenario {scenario}")
   } else {
     NULL
@@ -39,20 +40,28 @@ plot_res <- function(data, scenario, y) {
     }
   }
   
-  ggplot(data[type == scenario], aes_string(x = "n", y = y, color = "estimator")) + 
+  ggplot(data[type == scenario], aes_string(x = "n", y = y, group = "estimator")) + 
     geom_point() + 
-    geom_line() + 
+    geom_line(aes_string(linetype = "estimator"), alpha = 0.75) + 
     labs(y = y_lab, 
          title = title, 
-         color = "Estimator") +
-    theme_res
+         linetype = "Estimator")
 }
 
-theme_res <- list(
-  scale_color_discrete(breaks = c("IPW", "substitution", "TMLE", "SDR"),
-                       labels = c("IPW", "Sub.", "TML", "SDR")),
+theme_bias <- list(
+  scale_linetype_discrete(breaks = c("IPW", "substitution", "TMLE", "SDR"),
+                          labels = c("IPW", "Sub.", "TML", "SDR")),
   theme_bw(base_size = 8),
-  theme(plot.title = element_text(hjust = 0.5, size = 8))
+  theme(plot.title = element_text(hjust = 0.5, size = 8), 
+        plot.tag = element_text(size = 8))
+)
+
+theme_covr <- list(
+  scale_linetype_discrete(breaks = c("TMLE", "SDR"),
+                          labels = c("TML", "SDR")),
+  theme_bw(base_size = 8),
+  theme(plot.title = element_text(hjust = 0.5, size = 8), 
+        plot.tag = element_text(size = 8))
 )
 
 # data import -------------------------------------------------------------
@@ -83,13 +92,20 @@ results <-
 
 list(
   plot_res(results, 1, "bias"),
-  plot_res(results, 2, "bias"),
-  plot_res(results, 3, "bias"),
-  plot_res(results, 4, "bias"),
-  plot_res(results, 1, "n_bias"),
-  plot_res(results, 2, "n_bias"),
-  plot_res(results, 3, "n_bias"),
-  plot_res(results, 4, "n_bias"),
+  plot_res(results, 2, "bias") + 
+    coord_cartesian(ylim = c(0, 0.05)),
+  plot_res(results, 3, "bias") + 
+    coord_cartesian(ylim = c(0, 0.06)),
+  plot_res(results, 4, "bias") + 
+    coord_cartesian(ylim = c(0, 0.05)),
+  plot_res(results, 1, "n_bias") + 
+    coord_cartesian(ylim = c(0, 1.5)),
+  plot_res(results, 2, "n_bias") + 
+    coord_cartesian(ylim = c(0, 3.25)),
+  plot_res(results, 3, "n_bias") + 
+    coord_cartesian(ylim = c(0, 3.25)),
+  plot_res(results, 4, "n_bias") + 
+    coord_cartesian(ylim = c(0, 3.25)),
   plot_res(results, 1, "n_mse_bound"),
   plot_res(results, 2, "n_mse_bound"),
   plot_res(results, 3, "n_mse_bound"),
@@ -98,7 +114,9 @@ list(
   wrap_plots(ncol = 4, nrow = 3) + 
   plot_layout(guides = "collect") & 
   plot_annotation(tag_levels = 'A') & 
-  theme(plot.tag = element_text(size = 8))
+  theme_bias
+
+ggsave("bias-plot.png", width = 9, height = 5, dpi = 600)
 
 list(
   plot_res(results, 1, "rel_std_error") + 
@@ -121,5 +139,6 @@ list(
   wrap_plots(ncol = 4, nrow = 2) + 
   plot_layout(guides = "collect") & 
   plot_annotation(tag_levels = 'A') & 
-  theme(plot.tag = element_text(size = 8))
+  theme_covr
 
+ggsave("coverage-plot.png", width = 8.25, height = 3.25, dpi = 600)
