@@ -41,24 +41,29 @@ plot_res <- function(data, scenario, y) {
   }
   
   ggplot(data[type == scenario], aes_string(x = "n", y = y, group = "estimator")) + 
-    geom_point() + 
-    geom_line(aes_string(linetype = "estimator"), alpha = 0.75) + 
+    geom_line(alpha = 0.8) + 
+    geom_point(aes_string(shape = "estimator")) + 
     labs(y = y_lab, 
          title = title, 
          linetype = "Estimator")
 }
 
+lty <- c(0, 16, 2, 4)
+names(lty) <- c("IPW", "substitution", "TMLE", "SDR")
+
 theme_bias <- list(
-  scale_linetype_discrete(breaks = c("IPW", "substitution", "TMLE", "SDR"),
-                          labels = c("IPW", "Sub.", "TML", "SDR")),
+  scale_shape_manual(breaks = c("IPW", "substitution", "TMLE", "SDR"),
+                        labels = c("IPW", "Sub.", "TML", "SDR"), 
+                        values = lty),
   theme_bw(base_size = 8),
   theme(plot.title = element_text(hjust = 0.5, size = 8), 
         plot.tag = element_text(size = 8))
 )
 
 theme_covr <- list(
-  scale_linetype_discrete(breaks = c("TMLE", "SDR"),
-                          labels = c("TML", "SDR")),
+  scale_shape_manual(breaks = c("TMLE", "SDR"),
+                        labels = c("TML", "SDR"), 
+                        values = lty),
   theme_bw(base_size = 8),
   theme(plot.title = element_text(hjust = 0.5, size = 8), 
         plot.tag = element_text(size = 8))
