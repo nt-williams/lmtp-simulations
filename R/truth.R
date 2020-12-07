@@ -18,10 +18,10 @@ density_natural <- function(t, A, L, prev_A) {
 
 #' Compute Density, g_d
 #'
-#' @param t 
-#' @param A 
-#' @param L 
-#' @param prev_A 
+#' @param t The current time point.
+#' @param A The observed treatment at time t.
+#' @param L The observed covariate at time t.
+#' @param prev_A The observed treatment at time t-1.
 density_mtp <- function(t, A, L, prev_A) {
   density_natural(t, A, L, prev_A) * (A - 1 < 1) + 
     density_natural(t, A + 1, L, prev_A) * (A >= 1)
