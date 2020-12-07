@@ -3,8 +3,6 @@
 # Department of Population Health Sciences
 # Weill Cornell Medicine
 
-# .libPaths("/home/niw4001/R_local")
-
 library(lmtp)
 library(future)
 
@@ -25,5 +23,5 @@ partition(task, conf$task, conf$machines, conf$save, "sdr")
 partition(task, conf$task, conf$machines, conf$save, "sub")
 partition(task, conf$task, conf$machines, conf$save, "ipw")
 
-# quit("no")
+quit("no")
 

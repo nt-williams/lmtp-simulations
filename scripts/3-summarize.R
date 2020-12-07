@@ -78,7 +78,7 @@ fits <- fits[std.error < 1 | is.na(std.error) & estimate < 1, ]
 
 # true value estimates
 set.seed(5622)
-true_vals <- true(1e5, sample(1e8, 1))
+true_vals <- true(1e5, sample(1e8, 1), dag)
 truth <- true_vals$true
 bound <- true_vals$bound
 
