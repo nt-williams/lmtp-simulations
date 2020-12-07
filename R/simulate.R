@@ -1,12 +1,6 @@
-SL.caretRF <- function(Y, X, newX, family, obsWeights, id, ...) {
-  index <- origami::make_folds(n = length(Y), cluster_ids = id, V = 5)
-  index <- lapply(index, function(x) x$training_set)
-  control <- caret::trainControl(method = "cv", search = 'random', index = index,
-                                 verboseIter = TRUE, classProbs = TRUE)
-  SL.caret(Y, X, newX, family, obsWeights, method = 'ranger', tuneLength = 100,
-           trControl = control, ...)
-}
-
+#' Custom SuperLearner Function for the Highly Adaptive Lasso
+#' 
+#' Consult the SuperLearner package for more information.
 SL.hal90011 <- function(Y, X, newX = NULL, max_degree = NULL,
                         fit_type = "glmnet", n_folds = 3,
                         use_min = TRUE, family = stats::gaussian(),
@@ -39,23 +33,19 @@ SL.hal90011 <- function(Y, X, newX = NULL, max_degree = NULL,
 
 #' Simulation shift function
 #'
-#' @param data 
-#' @param trt 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @param data A dataframe.
+#' @param trt Name of treatment variable to be shifted.
 mtp <- function(data, trt) {         
   a <- data[[trt]]
   (a - 1) * (a - 1 >= 1) + a * (a - 1 < 1)
 }
 
-#' Simulate data and estimate MTP effect
+#' Run a single LMTP Simulation
 #'
-#' @param tasks
-#' @param row the row of data frame containing the task definitions to use
-#' @param estimator the estimator to use for estimation ("tml", "sdr", "sub", "ipw")
+#' @param seed A seed to set for reproducibility.
+#' @param n The number of observations to be used for estimation.
+#' @param type An integer between 1 and 4 indicating the type of model misspecification.
+#' @param estimator The estimator to simulate ("tml", "sdr", "ipw", "sub").
 lmtp_simulate <- function(seed, n, type, estimator) {
   set.seed(seed)
   sim_df <- suppressMessages(datagen(dag, n))
@@ -124,14 +114,14 @@ lmtp_simulate <- function(seed, n, type, estimator) {
 
 globals <- ls()
 
-#' Compute an instance of the lmtp simulation
+#' Compute an instance of the LMTP simulation
 #'
-#' @param tasks
-#' @param instance an integer between 1-1000 representing an instance 
-#'   to run a partition of the lmtp simulation task list
-#' @param machines
-#' @param save
-#' @param estimator
+#' @param tasks A data frame containing task definitions.
+#' @param instance An integer representing a Slurm instance 
+#'   to run a partition of the lmtp simulation task list.
+#' @param machines The number of machines to be used for the simulation.
+#' @param save Path to a folder where results will be saved.
+#' @param estimator The estimator to simulate ("tml", "sdr", "ipw", "sub").
 partition <- function(tasks, instance, machines, save, estimator) {
   index <-
     (1:nrow(tasks))[(1:nrow(tasks) - 1) %% machines + 1 == instance]
