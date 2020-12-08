@@ -16,4 +16,8 @@ This repository contains the code used for the simulation study in the paper "No
 
 -   results: Contains simulation results.
 
-**This simulation uses a special version of the [*lmtp*](https://github.com/nt-williams/lmtp)** **package that allows for different [*SuperLearner*](https://github.com/ecpolley/SuperLearner) calls at every time point.**
+**This simulation uses a special version of the [*lmtp*](https://github.com/nt-williams/lmtp)** **package that allows for different [*SuperLearner*](https://github.com/ecpolley/SuperLearner) calls at every time point.** This package version is available in this repository as "lmtp\_1.0.0.9001.tar.gz". It can be installed using:
+
+```{r, eval = FALSE}
+install.packages("lmtp_1.0.0.9001.tar.gz", repos = NULL, type = "source")
+```
